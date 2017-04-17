@@ -8,16 +8,25 @@ html
         #root
             b Memory Capacity: 
             input(v-model="capacity")
+            br 
+            | {{ memRange }}
+            input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")
+            b Process Memory Usage Range
             br
             b Process Add Rate (ms): 
-            input(v-model="rate")
+            input(v-model="rate")            
+            p Memory Utilization
+            input(type="checkbox" v-model="progressSplit")
+            #progress-bar-wrapper               
+                if (!progressSplit === true)
+                    p.progressNumber {{ current }}% 
+                    .progress-block(v-for="p in activeProcesses" v-bind:style="[progressBlockStyle,{ background: p.color, width: (p.m / capacity) * 500 }]")       
+                else
+                    .progressNumber {{ current }}% 
+                    #progress-bar(v-bind:style="{ width: memStatusBar }")
             .page-frame       
-                .page-block(v-for="p in activeProcesses" v-bind:style="{ background: p.color }") 
+                .page-block(v-for="p in activeProcesses" v-bind:style="[pageBlockStyle,{ background: p.color }]") 
                     | PID: {{ p.id }}
                     br
                     | MEM: {{ p.m }}
-            p Memory Utilization
-            #progress-bar-wrapper
-                p.progressNumber {{ current }}%        
-                #progress-bar(v-bind:style="{ width: memStatusBar }")
     script(src='/scripts/main.js')

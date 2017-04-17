@@ -1,10 +1,28 @@
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes expand {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
 .page-frame {
   display: flex;
   width: 500px;
-  height: 150px;
+  height: auto;
   align-items: flex-start;
   flex-direction: row;
   flex-wrap: wrap;
@@ -19,10 +37,8 @@ body {
   height: 50px;
   border: 1px solid #333;
   margin: 5px;
-  transition: .3s all;
   padding: 3px;
   animation-name: fade-in;
-  animation-duration: 1s;
 }
 .page-block:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -30,29 +46,36 @@ body {
   transition: .3s all;
 }
 .progressNumber {
+  font-size: 22px;
   float: left;
+  position: absolute;
+  transform: skew(20deg);
   color: #fff;
-  vertical-align: middle;
-  margin: 0 auto;
+  border-radius: 30px;
+  margin-top: 8px;
+  margin-left: 8px;
   text-align: center;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  display: block;
+  z-index: 3;
 }
 #progress-bar-wrapper {
+  background-image: url('../assets/images/grey.png');
+  background-repeat: repeat;
   width: 500px;
-  background: red;
+  height: 50px;
+  transform: skew(-20deg);
   border: 1px solid #000;
+}
+.progress-block {
+  height: 100%;
+  display: inline-block;
+  animation-name: expand;
+  transition: all linear;
 }
 #progress-bar {
   width: 0%;
-  height: 30px;
+  height: 100%;
   background: green;
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
