@@ -1,0 +1,23 @@
+html
+    head
+        script(src='https://unpkg.com/vue')    
+        script(src='/scripts/lodash.js')
+        link(rel='stylesheet' href='/css/main.css')
+        title Memory Simulator
+    body
+        #root
+            b Memory Capacity: 
+            input(v-model="capacity")
+            br
+            b Process Add Rate (ms): 
+            input(v-model="rate")
+            .page-frame       
+                .page-block(v-for="p in activeProcesses" v-bind:style="{ background: p.color }") 
+                    | PID: {{ p.id }}
+                    br
+                    | MEM: {{ p.m }}
+            p Memory Utilization
+            #progress-bar-wrapper
+                p.progressNumber {{ current }}%        
+                #progress-bar(v-bind:style="{ width: memStatusBar }")
+    script(src='/scripts/main.js')
