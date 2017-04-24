@@ -6,10 +6,17 @@ var vapp = new Vue({
         memStatusBar: '0%',
         memRange: 20,
         rate: 1000,
+        baseHeight: 30,
         current: 0,
         progressSplit: true,
         capacity: 100,
+        pageSizeRandom: false,
+        pageSize: 30,
+        frameCount: 10,
+        frames: [],
+        pages: [],
         activeProcesses: [],
+        allocation: 100,       
         pageBlockStyle: {
             transition: this.rate / 1000 + 's all',
             animationDuration: '1s'
@@ -22,6 +29,9 @@ var vapp = new Vue({
              animationTimingFunction: 'linear',
              display: 'inline-block',
              transformOrigin: '0 0'          
+        },
+        pageBlockStyle: {
+            height: Math.floor((this.pageSize / this.capacity) * 100) + '%'
         }
     },
     watch: {
@@ -30,9 +40,86 @@ var vapp = new Vue({
             this.pageBlockStyle.animationDuration = val + 'ms';
             this.progressBlockStyle.animationDuration = val + 'ms';
             this.progressBlockStyle.transition = val + 'ms all';
+        },
+        pageSize: function(val) {
+            this.pageBlockStyle.width = Math.floor((this.pageSize / this.capacity) * 100) + '%';            
+            this.genPages();
+            this.fifo();
+        },
+        capacity: function(val) {
+            this.pageBlockStyle.width = Math.floor((this.pageSize / this.capacity) * 100) + '%';            
+            this.genPages();
+            this.fifo();
+        },
+        pageSizeRandom: function(val) {
+            this.genPages();
+            this.fifo();
+        }
+    },
+    methods: {
+        genFrames: function() {
+            this.frames = [];
+            for(var i = 0; i < this.frameCount; i++) {
+                this.frames.push(gen());
+            }
+        },
+        genPages: function() {
+            this.pages = [];
+            if (!this.pageSizeRandom) {
+                var pageCount = this.pageSize > this.capacity ? 1 : Math.floor(this.capacity / this.pageSize);
+            for(var i = 0; i < pageCount; i++) {               
+                this.pages.push({
+                    id: Math.floor(Math.random() * 1000), 
+                    capacity: this.pageSize,
+                    width: Math.floor((this.pageSize / this.capacity) * 100) + '%',
+                    processes: []
+                });
+            }
+        } else {            
+            var remainingCapacity = this.capacity;
+                do {
+                     var currentPageSize = Math.floor((Math.random() * this.pageSize)) + 1;
+                     if (currentPageSize > this.pageSize) currentPageSize = this.pageSize;
+                     console.log('page size: ' + currentPageSize);
+                     this.pages.push({
+                        id: Math.floor(Math.random() * 1000), 
+                        capacity: currentPageSize,
+                        width: Math.floor((currentPageSize / this.capacity) * 100) + '%',
+                        processes: [] 
+                     });
+                     remainingCapacity -= currentPageSize;
+
+                } while (remainingCapacity > 0);
+            }
+            
+        },
+        fifo: function() {            
+            console.log('active: ' + this.frames.length);
+            outer: for(var i = 0; i < this.frames.length; i++) {
+                var currentProcess = this.frames[i]; 
+                currentProcess.pageId = null;               
+                inner: for (var q = 0; q < this.pages.length; q++) {
+                    var currentPage = this.pages[q];
+                    console.log('c page capacity: ' + currentPage.capacity);
+                    console.log('c page process count: ' + currentPage.processes.length);
+                    var sum = _.sumBy(currentPage.processes, function(p) { return p.m; });
+                    console.log('sum: ' + sum);
+                    if ((currentPage.capacity - sum) >= currentProcess.m) {//Page has room                        
+                        currentProcess.pageId = currentPage.id;
+                        currentProcess.width = Math.floor((currentProcess.m / currentPage.capacity) * 100) + '%';
+                        currentPage.processes.push(currentProcess);
+
+                        console.log('added ' + currentProcess.id + ' to ' + currentPage.id);
+                        continue outer;
+                    }
+                    else console.log('nope');
+                }
+            }
         }
     }
 });
+
+
 
 function addPage() {
     var newProcess = gen();
@@ -52,7 +139,6 @@ function addPage() {
 function add(newProcess) {
     vapp.$data.activeProcesses.push(newProcess);
     vapp.$data.current += newProcess.m;
-    console.log('currentusage: ' + vapp.$data.current + ' | ' + vapp.$data.progressSplit);
     vapp.$data.memStatusBar = (vapp.$data.current / vapp.$data.capacity) * uiWidth + 'px';
 }
 
@@ -71,4 +157,8 @@ function randColor() {
 //Start
 vapp.$data.rate = 1000;
 vapp.$forceUpdate();
-addPage();
+//addPage();
+
+vapp.genFrames();
+vapp.genPages();
+vapp.fifo();

@@ -21,9 +21,25 @@
 body {
     font-family: Arial, Helvetica, sans-serif
 }
+
+h4 {
+    font-size: 12px;
+    text-align: center;
+    color: #333;
+    font-variant: small-caps;
+}
+
+input[type="text"] {
+    width: auto;
+    padding: 3px;
+    border-radius: 20px;
+    border: 1px solid #999;
+    outline: none;
+}
+
 .page-frame {
     display: flex;
-    width: 500px;
+    flex: 1 1 auto;    
     height: auto;
     align-items: flex-start;
     flex-direction: row;
@@ -35,13 +51,34 @@ body {
     text-shadow: 0px 0px #000; 
 }
 
-.page-block {
-    width: 50px;
-    height: 50px;
-    border: 1px solid #333; 
-    margin: 5px;
-    padding: 3px;
+.page-block {      
+    border: 1px dashed #333;
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+}
+
+.page-process {    
     animation-name: fade-in;
+    min-height: 100%;  
+    align-self: flex-start;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px #000;
+    p {
+         margin: 2px;
+         color: #fff; 
+         font-size: 9px;
+         text-align: center;
+       
+         background: rgba(0,0,0,.3);
+         padding: 2px;
+    } 
+    p.inner-process { 
+        margin: 2px; 
+        bottom: 0;
+        background: rgba(255,255,255,.7);
+        color: #000;    
+    }
     &:hover {
         box-shadow: 0 0 10px rgba(0,0,0,.5);
         transform: scale(1.1);
@@ -65,19 +102,69 @@ body {
     z-index: 3;
 }
 
+.option-container {
+    display: flex;
+    padding: 5px;
+    border: 1px solid #bbb;
+    width: 100%;
+}
+
+@keyframes frame-fade-in {
+    from {
+        transform: scale(.4);
+    }
+    to {
+        transform: scale(1);
+    }
+}
+
+.framelist-enter-active {
+    animation: frame-fade-in 1s;
+}
+
+.option {
+    font-size: 10px;
+    font-weight: lighter;
+    margin: 5px;
+    background: #eee;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.frame {
+    width: 100px;
+    font-size: 9px;
+    text-align: center;
+    border: 1px solid #bbb;
+    margin: 2px;
+}
+
+#root {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+#root > * {
+    margin: 10px;
+}
+
+#frame-frame {
+    border: 1px solid #888;
+    padding: 3px;
+    float: left;
+}
+
 #progress-bar-wrapper {
+    display: none;
     background-image: url('../assets/images/grey.png');
     background-repeat: repeat;
     width: 500px;
     height: 50px;
-     transform: skew(-20deg);
+    transform: skew(-20deg);
     border: 1px solid #000;  
 }
-
-#progress-bar-wrapper:last-child {
-
-}
-
 
 .progress-block {
     height: 100%;
@@ -86,10 +173,30 @@ body {
     transition: all linear;
 }
 
+.page-label {
+    font-size: 10px;
+    font-weight: normal;
+}
+
+#pageTable {
+    height: 500px;
+    width: 100%;
+    outline: 3px solid #888;
+    background-image: url('../assets/images/grey.png');
+    background-repeat: repeat;
+    tr {
+        width: 100%;
+        height: auto;
+        td { 
+            &:first-child {
+                width: 100px;
+            }
+        }
+    }
+}
 
 #progress-bar {
     width: 0%;
     height: 100%;
     background: green;
-   
 }

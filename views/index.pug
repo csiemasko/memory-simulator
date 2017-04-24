@@ -3,20 +3,33 @@ html
         script(src='https://unpkg.com/vue')    
         script(src='/scripts/lodash.js')
         link(rel='stylesheet' href='/css/main.css')
+        link(rel='stylesheet' href='/css/font-awesome.min.css')
         title Memory Simulator
     body
         #root
-            b Memory Capacity: 
-            input(v-model="capacity")
-            br 
-            | {{ memRange }}
-            input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")
-            b Process Memory Usage Range
-            br
-            b Process Add Rate (ms): 
-            input(v-model="rate")            
-            p Memory Utilization
-            input(type="checkbox" v-model="progressSplit")
+            p Options
+            .option-container
+                .option
+                    b Memory Capacity: 
+                    input(type="text" v-model="capacity")
+                    p units
+                .option           
+                    p {{ memRange }}          
+                    input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")               
+                    b Process Memory Usage Range
+                .option 
+                    p Page Size              
+                    input(type="range" v-model="pageSize" min="1" v-bind:max="{ capacity }")
+                    br
+                    b {{ pageSize }} units
+                    br
+                    input(type="checkbox" v-model="pageSizeRandom") 
+                    | Random Size Range
+                .option
+                    p Frame Count: 
+                    input(Type="range" min="1" v-model="frameCount")
+                    br
+                    input(type="button" @click="genFrames()" value="Regenerate Frames")
             #progress-bar-wrapper               
                 if (!progressSplit === true)
                     p.progressNumber {{ current }}% 
@@ -24,9 +37,27 @@ html
                 else
                     .progressNumber {{ current }}% 
                     #progress-bar(v-bind:style="{ width: memStatusBar }")
-            .page-frame       
-                .page-block(v-for="p in activeProcesses" v-bind:style="[pageBlockStyle,{ background: p.color }]") 
-                    | PID: {{ p.id }}
-                    br
-                    | MEM: {{ p.m }}
+            #frame-frame
+                h4 Frames
+                transition-group(name="framelist")
+                    .frame(v-for="f in frames" v-bind:key="f" v-bind:style="{ background: f.color, marginLeft: f.pageId ? 10 : 0, opacity: f.pageId ? 0.3 : 1 }")
+                        p {{ f.id }}                      
+            .page-frame   
+                table#pageTable                   
+                    tbody
+                        tr(v-for="g in pages")  
+                            td 
+                                .page-label
+                                    Page ID {{ g.id }}
+                                    br
+                                    p Capacity: {{ g.capacity }}u ({{ Math.round((g.capacity / capacity) * 100)  }}%)
+                            td
+                                .page-block(v-bind:style="[pageBlockStyle,{ width: g.width }]")
+                                    .page-process(v-for="r in g.processes" v-bind:style="{ background: r.color, width: r.width }")
+                                        p 
+                                            i.fa.fa-tag 
+                                            |  {{ r.id }}                                                                               
+                                        p.inner-process
+                                            i.fa.fa-pie-chart
+                                            |  {{ r.m }}
     script(src='/scripts/main.js')
