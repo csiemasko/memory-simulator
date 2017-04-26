@@ -1,11 +1,13 @@
-@keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: scale(.2);
+@color-default-border: #333;
+
+@keyframes grow-in {
+    from { 
+        transform: scaleX(0);
+     
     }
     to {
-        opacity: 1;
-        transform: scale(1);
+        transform: scaleX(1);
+    
     }
 }
 
@@ -23,7 +25,7 @@ body {
 }
 
 h4 {
-    font-size: 12px;
+    font-size: 10px;
     text-align: center;
     color: #333;
     font-variant: small-caps;
@@ -37,52 +39,92 @@ input[type="text"] {
     outline: none;
 }
 
-.page-frame {
+input[type="range"] {
+    width: 100px;
+}
+
+.page-frame {   
     display: flex;
     flex: 1 1 auto;    
-    height: auto;
-    align-items: flex-start;
-    flex-direction: row;
-    flex-wrap: wrap;
+    height: 500px;
+    width: auto;   
     border: 1px solid #000;
     font-size: 10px;
     text-align: center;
     color: #fff;
     text-shadow: 0px 0px #000; 
+    box-sizing: border-box;
+    flex-direction: column;
+    align-content: stretch;
 }
 
 .page-block {      
-    border: 1px dashed #333;
+    border: 1px dashed @color-default-border;
     display: flex;
     height: 100%;
     flex-direction: row;
 }
 
-.page-process {    
-    animation-name: fade-in;
-    min-height: 100%;  
-    align-self: flex-start;
+@keyframes grow-preview {
+    100% {
+        min-width: 500px;
+        width: 100%;
+    }
+}
+
+.section-header {
+    display: block;
+    font-size: 10px;
+    color: #fff;
+    background: #000;
+    padding: 3px;
+    width: 100%;
     box-sizing: border-box;
-    box-shadow: 0 0 10px #000;
-    p {
-         margin: 2px;
+    text-align: center;
+}
+
+.sub-section-header {
+    .section-header;
+    background: #555;
+}
+
+.page-process {    
+    
+    :nth-child(odd) {
+        i {
+            color: #fff;
+            background: transparent;
+        }
          color: #fff; 
+         background: rgba(0,0,0,.3); 
+    }
+    :nth-child(even) {
+        i {
+            color: #000;
+            background: transparent;
+        }
+        background: rgba(255,255,255,.7);
+        color: #000; 
+    }
+    p[class*="label-"] {
+         margin: 2px;      
          font-size: 9px;
          text-align: center;
-       
-         background: rgba(0,0,0,.3);
          padding: 2px;
-    } 
-    p.inner-process { 
-        margin: 2px; 
-        bottom: 0;
-        background: rgba(255,255,255,.7);
-        color: #000;    
+         overflow-x: hidden;
+    }   
+    p.label-animal {
+        text-transform: capitalize;
+        font-size: 12;
+        text-align: center;        
     }
     &:hover {
-        box-shadow: 0 0 10px rgba(0,0,0,.5);
+        animation: grow-width 1s forwards;
+        min-width: 500px;
+        box-shadow: 0 0 30px rgba(0,0,0,.5);
         transform: scale(1.1);
-        transition: .3s all;
+        z-index: 5;
+        transition: transform 0.5s ease, min-width 3s ease;
     }
 }
 
@@ -102,11 +144,14 @@ input[type="text"] {
     z-index: 3;
 }
 
-.option-container {
-    display: flex;
-    padding: 5px;
-    border: 1px solid #bbb;
-    width: 100%;
+.option-container {    
+    display: flex;   
+    box-sizing: border-box;
+    border: 1px solid #eee;
+    width: 100%; 
+    table  {
+        width: 100%;
+    }
 }
 
 @keyframes frame-fade-in {
@@ -122,21 +167,47 @@ input[type="text"] {
     animation: frame-fade-in 1s;
 }
 
-.option {
+.option {   
+    display: inline-block;
+    vertical-align: top;
     font-size: 10px;
-    font-weight: lighter;
-    margin: 5px;
-    background: #eee;
-    padding: 5px;
-    border-radius: 5px;
+    font-weight: lighter;  
+    background: #eee; 
+    margin: 10px;
+    border: 1px solid @color-default-border;
+    ul {
+        padding: 0;
+        list-style-type: none;
+    } 
+    table {
+        tr {
+            td.o-header {
+                text-align: right;
+                font-size: 10px;
+                vertical-align: middle;
+                align-content: center;
+            }
+        }
+    } 
 }
 
 .frame {
+    color: #fff;
     width: 100px;
+    height: 30px;
     font-size: 9px;
     text-align: center;
     border: 1px solid #bbb;
+    box-sizing: border-box;
     margin: 2px;
+    p {
+        background: rgba(0,0,0,0.5);
+    }
+    img {
+        float: left;
+        height: 30px;
+        width: 30px;
+    }
 }
 
 #root {
@@ -147,13 +218,16 @@ input[type="text"] {
 }
 
 #root > * {
-    margin: 10px;
+    margin: 5px;
 }
 
 #frame-frame {
-    border: 1px solid #888;
-    padding: 3px;
+    border: 1px solid #888;    
     float: left;
+    height: 500px;
+    max-height: 500px;
+    overflow-y: auto;
+    box-sizing: border-box;    
 }
 
 #progress-bar-wrapper {
@@ -164,6 +238,29 @@ input[type="text"] {
     height: 50px;
     transform: skew(-20deg);
     border: 1px solid #000;  
+}
+
+#memory-bar {
+    background: #f00;
+    height: 10px;
+    width: 200px;
+    float: right;
+}
+
+@keyframes usagePulse {
+    from {
+        background: linear-gradient(45deg, rgba(210,255,82,1) 0%, rgba(145,232,66,1) 100%);    
+    }
+    to {
+        background: linear-gradient(45deg, rgba(145,232,66,1) 0%, rgba(145,232,66,1) 11%, rgba(210,255,82,1) 98%, rgba(210,255,82,1) 100%);
+    }
+}
+
+#memory-usage {
+    height: 100%;
+    background: #0f0;
+    animation: usagePulse 1s reverse infinite;
+    transition: .5s all;
 }
 
 .progress-block {
@@ -178,15 +275,30 @@ input[type="text"] {
     font-weight: normal;
 }
 
+.ui-draggable-dragging {
+    box-shadow: 0 0 50px rgba(0,0,0,.3);
+    transform: scale(1.005);
+    transition: .25s all;
+}
+
 #pageTable {
-    height: 500px;
+    flex: 1 0 auto;
+    padding: 5px;
+    align-self: stretch;
     width: 100%;
-    outline: 3px solid #888;
+    height: 100%;
+    box-sizing: border-box;
     background-image: url('../assets/images/grey.png');
     background-repeat: repeat;
+    background-size: contain;
     tr {
         width: 100%;
         height: auto;
+        transition: .3s all;
+        &:hover {
+            transition: .3s all;
+            background: rgba(0,0,255,.2);
+        }
         td { 
             &:first-child {
                 width: 100px;

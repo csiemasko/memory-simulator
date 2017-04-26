@@ -2,34 +2,75 @@ html
     head
         script(src='https://unpkg.com/vue')    
         script(src='/scripts/lodash.js')
+        script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
+        script(src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js')
         link(rel='stylesheet' href='/css/main.css')
         link(rel='stylesheet' href='/css/font-awesome.min.css')
+        link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css')
         title Memory Simulator
     body
         #root
-            p Options
             .option-container
-                .option
-                    b Memory Capacity: 
-                    input(type="text" v-model="capacity")
-                    p units
-                .option           
-                    p {{ memRange }}          
-                    input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")               
-                    b Process Memory Usage Range
-                .option 
-                    p Page Size              
-                    input(type="range" v-model="pageSize" min="1" v-bind:max="{ capacity }")
-                    br
-                    b {{ pageSize }} units
-                    br
-                    input(type="checkbox" v-model="pageSizeRandom") 
-                    | Random Size Range
-                .option
-                    p Frame Count: 
-                    input(Type="range" min="1" v-model="frameCount")
-                    br
-                    input(type="button" @click="genFrames()" value="Regenerate Frames")
+                table
+                    tr
+                        td
+                            .section-Header Options  
+                    tr
+                        td
+                            .option
+                                .sub-section-header Functions
+                                br
+                                input(type="button" value="Generate Frames" @click="genFrames()")
+                                br
+                                input(type="button" value="Generate Pages" @click="genPages()")
+                                br
+                                input(type="button" value="First Fit" @click="fifo()")
+                            .option
+                                .sub-section-header Memory Values
+                                table
+                                    tr
+                                        td.o-header Memory Capacity:
+                                        td
+                                            input(type="text" v-model="capacity")
+                                    tr
+                                        td.o-header Process Memory Usage Range
+                                        td 
+                                                input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")
+                                                | {{ memRange }}
+                            .option 
+                                .sub-section-header Page Values
+                                table
+                                    tr
+                                        td.o-header Page Size:
+                                        td
+                                            input(type="range" v-model="pageSize" min="1" v-bind:max="{ capacity }")
+                                            | {{ pageSize }} units
+                                    tr
+                                        td.o-header Random Size Range:
+                                        td
+                                            input(type="checkbox" v-model="pageSizeRandom")
+                            .option
+                                .sub-section-header Quantum Values
+                                table
+                                    tr
+                                        td.o-header Frame Count:
+                                        td
+                                            input(Type="range" min="1" v-model="frameCount")                    
+                            .option
+                                .sub-section-header UI Options
+                                ul
+                                    li
+                                        input(type="checkbox" v-model="options.showId")
+                                        | ID
+                                    li
+                                        input(type="checkbox" v-model="options.showSize")
+                                        | Memory Usage
+                                    li
+                                        input(type="checkbox" v-model="options.showAnimalName")
+                                        | Animal Name  
+                                    li
+                                        input(type="checkbox" v-model="options.showAnimalImage")
+                                        | Animal Image
             #progress-bar-wrapper               
                 if (!progressSplit === true)
                     p.progressNumber {{ current }}% 
@@ -37,27 +78,36 @@ html
                 else
                     .progressNumber {{ current }}% 
                     #progress-bar(v-bind:style="{ width: memStatusBar }")
-            #frame-frame
-                h4 Frames
-                transition-group(name="framelist")
-                    .frame(v-for="f in frames" v-bind:key="f" v-bind:style="{ background: f.color, marginLeft: f.pageId ? 10 : 0, opacity: f.pageId ? 0.3 : 1 }")
-                        p {{ f.id }}                      
+            #frame-frame                
+                table
+                    tr
+                        td
+                            .section-header Virtual Memory                                
+                    tr
+                        td
+                            .frame(v-for="f in frames" v-bind:key="f" v-bind:style="{ background: f.color, marginLeft: f.pageId ? 10 : 0, opacity: f.pageId ? 0.3 : 1 }")
+                                img(v-if="options.showAnimalImage" v-bind:src="f.animal.url")
+                                p {{ f.id }} {{ options.showAnimalName ? '(' + f.animal.name + ')': '' }}
             .page-frame   
+                .section-header Physical Memory
+                    #memory-bar
+                        #memory-usage(v-bind:style="{ width: Math.floor((current / capacity)*100) + '%' }")
                 table#pageTable                   
                     tbody
-                        tr(v-for="g in pages")  
+                        tr(v-for="g in pages" data-is-focused="false" @click="focusPage($event)")  
                             td 
                                 .page-label
-                                    Page ID {{ g.id }}
+                                    | Page ID {{ g.id }}
                                     br
                                     p Capacity: {{ g.capacity }}u ({{ Math.round((g.capacity / capacity) * 100)  }}%)
                             td
                                 .page-block(v-bind:style="[pageBlockStyle,{ width: g.width }]")
-                                    .page-process(v-for="r in g.processes" v-bind:style="{ background: r.color, width: r.width }")
-                                        p 
+                                    .page-process(v-for="r in g.processes" v-bind:style="[processStyle, { background: r.color, width: r.width, 'background-image': options.showAnimalImage ? 'url(' + r.animal.url + ')' : 'none' }]")                                       
+                                        p.label-id(v-if="options.showId" v-bind:style="{ background: r.color }")
                                             i.fa.fa-tag 
                                             |  {{ r.id }}                                                                               
-                                        p.inner-process
+                                        p.label-memory(v-if="options.showSize")
                                             i.fa.fa-pie-chart
                                             |  {{ r.m }}
+                                        p.label-animal(v-if="options.showAnimalName") {{ r.animal.name }}
     script(src='/scripts/main.js')

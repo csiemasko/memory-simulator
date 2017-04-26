@@ -2,25 +2,31 @@ const uiWidth = 500;
 
 var vapp = new Vue({
     el: '#root',
-    data: {
+    data: {       
+        options: {
+            showId: true,
+            showSize: true,
+            showAnimalName: true,
+            showAnimalImage: true            
+        },           
+        capacity: 100,
+            pageSize: 30,
+            frameCount: 10,
+            allocation: 100,
+            memRange: 20,
+            pageSizeRandom: false,
+            rate: 1000,
         memStatusBar: '0%',
-        memRange: 20,
-        rate: 1000,
         baseHeight: 30,
         current: 0,
         progressSplit: true,
-        capacity: 100,
-        pageSizeRandom: false,
-        pageSize: 30,
-        frameCount: 10,
+        animalList: [],
         frames: [],
         pages: [],
-        activeProcesses: [],
-        allocation: 100,       
+        activeProcesses: [],              
         pageBlockStyle: {
             transition: this.rate / 1000 + 's all',
-            animationDuration: '1s'
-           
+            animationDuration: '1s'           
         },
         progressBlockStyle: {
              height: '100%',
@@ -30,8 +36,18 @@ var vapp = new Vue({
              display: 'inline-block',
              transformOrigin: '0 0'          
         },
+        processStyle: {
+            transformOrigin: '0 0',
+            animation: 'grow-in 1000ms',    
+            minHeight: '100%',
+            alignSelf: 'flex-start',
+            boxSizing: 'border-box',
+            boxShadow: '0 0 10px #000',
+            backgroundSize: 'cover',
+            transition: '.25s all'
+        },
         pageBlockStyle: {
-            height: Math.floor((this.pageSize / this.capacity) * 100) + '%'
+            height: Math.floor((this.pageSize / this.capacity) * 100) + '%'       
         }
     },
     watch: {
@@ -56,11 +72,14 @@ var vapp = new Vue({
             this.fifo();
         }
     },
-    methods: {
+    methods: {              
         genFrames: function() {
             this.frames = [];
             for(var i = 0; i < this.frameCount; i++) {
                 this.frames.push(gen());
+            }
+            for(var q = 0; q < this.frames.length; q++) {
+                this.frames[q].animal = (q > this.animalList.length) ? "[MISSING]" : this.animalList[q];             
             }
         },
         genPages: function() {
@@ -72,6 +91,7 @@ var vapp = new Vue({
                     id: Math.floor(Math.random() * 1000), 
                     capacity: this.pageSize,
                     width: Math.floor((this.pageSize / this.capacity) * 100) + '%',
+                    usage: 0,
                     processes: []
                 });
             }
@@ -79,13 +99,12 @@ var vapp = new Vue({
             var remainingCapacity = this.capacity;
                 do {
                      var currentPageSize = Math.floor((Math.random() * this.pageSize)) + 1;
-                     if (currentPageSize > this.pageSize) currentPageSize = this.pageSize;
-                     console.log('page size: ' + currentPageSize);
+                     if (currentPageSize > this.pageSize) currentPageSize = this.pageSize;                   
                      this.pages.push({
                         id: Math.floor(Math.random() * 1000), 
                         capacity: currentPageSize,
                         width: Math.floor((currentPageSize / this.capacity) * 100) + '%',
-                        processes: [] 
+                        processes: []
                      });
                      remainingCapacity -= currentPageSize;
 
@@ -94,36 +113,82 @@ var vapp = new Vue({
             
         },
         fifo: function() {            
+            var delay = 0;  
+            this.current = 0;
+            for(p in this.pages) {
+                p.processes = [];
+            }
             console.log('active: ' + this.frames.length);
             outer: for(var i = 0; i < this.frames.length; i++) {
                 var currentProcess = this.frames[i]; 
                 currentProcess.pageId = null;               
                 inner: for (var q = 0; q < this.pages.length; q++) {
-                    var currentPage = this.pages[q];
-                    console.log('c page capacity: ' + currentPage.capacity);
-                    console.log('c page process count: ' + currentPage.processes.length);
-                    var sum = _.sumBy(currentPage.processes, function(p) { return p.m; });
-                    console.log('sum: ' + sum);
-                    if ((currentPage.capacity - sum) >= currentProcess.m) {//Page has room                        
+                    var currentPage = this.pages[q];                
+                    var sum = _.sumBy(currentPage.processes, function(p) { return p.m; });                    
+                    if ((currentPage.capacity - currentPage.usage) >= currentProcess.m) {//Page has room                        
                         currentProcess.pageId = currentPage.id;
                         currentProcess.width = Math.floor((currentProcess.m / currentPage.capacity) * 100) + '%';
-                        currentPage.processes.push(currentProcess);
-
-                        console.log('added ' + currentProcess.id + ' to ' + currentPage.id);
+ 
+                        currentPage.usage+=currentProcess.m;
                         continue outer;
-                    }
-                    else console.log('nope');
+                    }                   
                 }
-            }
+            }            
+            for(var k = 0; k < this.frames.length; k++) { 
+                if (!this.frames[k].pageId) continue;
+                this.addProcess(k,delay+=100);
+            }          
+        },
+        addProcess: function(k,delay) {
+            setTimeout(function() {                    
+            var f = vapp.$data.frames[k];
+            if (f == null || f == undefined) {}
+            var page = _.find(vapp.$data.pages, ['id', f.pageId]);
+            page.processes.push(f); 
+            vapp.$data.current += f.m;
+            }, delay);                       
+        },
+        focusPage: function(event) { 
+            var current = $(event.currentTarget).data('is-focused');
+            $(event.currentTarget).data('is-focused', !current);
+            $(event.currentTarget).attr('height', '100%');
+            
+        },
+        init: function () {
+            $.get('/get-animals', function(v) {
+                vapp.$data.animalList = shuffle(v);  
+                /*for(var i = 0; i < vapp.$data.animalList.length; i++) {
+                    $.get('https://api.cognitive.microsoft.com/bing/v5.0/images/search?license=public&safeSearch=Strict&imageType=Photo&q=' + vapp.$data.animalList[i], function(r) {
+                        console.log(r.webSearchUrl ? r.webSearchUrl : vapp.$data.animalList[i] + ' -> NULL');
+                    });
+                } */                  
+                vapp.genFrames();
+                vapp.genPages();
+                vapp.fifo();  
+            });
         }
     }
 });
 
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+  while (0 !== currentIndex) {
+    
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+   
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
 
 
 function addPage() {
-    var newProcess = gen();
-    //currentUsage = _.sumBy(activeProcesses, function(p) { return p.mem; });
+    var newProcess = gen(); 
     if ((vapp.$data.current + newProcess.m) < vapp.$data.capacity) {//push process
         add(newProcess);
     } else {//remove a process
@@ -146,7 +211,8 @@ function gen(id, mem) {
     return {
         m: Math.floor(Math.random() * vapp.$data.memRange) + 1,
         id: Math.floor(Math.random() * 1000),
-        color: randColor()
+        color: randomColor(0),
+        animal: null        
     }
 }
 
@@ -154,11 +220,25 @@ function randColor() {
     return "#"+((1<<24)*Math.random()|0).toString(16);
 }
 
-//Start
-vapp.$data.rate = 1000;
-vapp.$forceUpdate();
-//addPage();
+function randomColor(brightness){
+  function randomChannel(brightness){
+    var r = 255-brightness;
+    var n = 0|((Math.random() * r) + brightness);
+    var s = n.toString(16);
+    return (s.length==1) ? '0'+s : s;
+  }
+  return '#' + randomChannel(brightness) + randomChannel(brightness) + randomChannel(brightness);
+}
 
-vapp.genFrames();
-vapp.genPages();
-vapp.fifo();
+//Initial Values
+//vapp.$data.rate = 1000;
+//vapp.$forceUpdate();
+vapp.init();
+
+manageUi();
+
+function manageUi() {
+    $('.page-frame').resizable().draggable({containment: "document", handle: ".section-header" });
+    $('#frame-frame').draggable({containment: "document", handle: ".section-header"});  
+   
+}
