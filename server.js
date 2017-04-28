@@ -30,12 +30,13 @@ function genAnimals(callback) {
     var complete = 0;
      for(var q = 0; q < animals.words.length; q++) {
            var opt = {
-                hosts: 'https://en.wikipedia.org',
-                path: '/w/api.php?action=query&prop=pageimages&format=json&titles=' + animals.words[q].replace('-','+') + '&pithumbsize=500'                
+                host: 'https://en.wikipedia.org',
+                path: '/w/api.php?action=query&prop=pageimages&format=json&titles=' + animals.words[q].replace('-','+') + '&pithumbsize=500',
+                timeout: 2000
            };
-           var request = https.get(opt.hosts + opt.path, function(res) {               
+           var request = https.get(opt.host+opt.path, function(res) {               
                var val = '';
-               var name = animals.words[q];
+               var name = animals.words[q];               
                 res.on('data', function (chunk) {                    
                     val += chunk;
                 });
@@ -64,7 +65,7 @@ function genAnimals(callback) {
                   
                 });
            });
-           //request.setTimeout(1000, function (e) {});
+           request.setTimeout(1000, function (e) { return; });
               
             }
 }

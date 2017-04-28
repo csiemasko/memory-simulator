@@ -4,6 +4,8 @@ html
         script(src='/scripts/lodash.js')
         script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
         script(src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js')
+        script(src='/scripts/moment.js')
+        script(src='/scripts/Chart.min.js')
         link(rel='stylesheet' href='/css/main.css')
         link(rel='stylesheet' href='/css/font-awesome.min.css')
         link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css')
@@ -14,7 +16,7 @@ html
                 table
                     tr
                         td
-                            .section-Header Options  
+                            .section-Header Controls  
                     tr
                         td
                             .option
@@ -30,35 +32,60 @@ html
                                 table
                                     tr
                                         td.o-header Memory Capacity:
-                                        td
-                                            input(type="text" v-model="capacity")
+                                        td.o-content
+                                            input(type="range" v-bind:min="{ pageSize }" max="1000" v-model="capacity")
+                                            | {{ capacity }}
                                     tr
-                                        td.o-header Process Memory Usage Range
-                                        td 
+                                        td.o-header Process Memory Usage Range:
+                                        td.o-content 
                                                 input(type="range" v-bind:max="{ capacity }" min="1" v-model="memRange")
                                                 | {{ memRange }}
+                                    tr
+                                        td.o-header Virtual Memory:
+                                        td.o-content
+                                            input(type="range" v-bind:min="{ pageSize }" max="1000" v-model="virtualMemory")
+                                            | {{ virtualMemory }}
                             .option 
                                 .sub-section-header Page Values
                                 table
                                     tr
                                         td.o-header Page Size:
-                                        td
+                                        td.o-content
                                             input(type="range" v-model="pageSize" min="1" v-bind:max="{ capacity }")
-                                            | {{ pageSize }} units
+                                            | {{ pageSize }}
                                     tr
                                         td.o-header Random Size Range:
-                                        td
+                                        td.o-content
                                             input(type="checkbox" v-model="pageSizeRandom")
                             .option
                                 .sub-section-header Quantum Values
                                 table
                                     tr
                                         td.o-header Frame Count:
-                                        td
-                                            input(Type="range" min="1" v-model="frameCount")                    
+                                        td.o-content
+                                            input(Type="range" min="1" max="20" v-model="frameCount")
+                                            | {{ frameCount }}
+                                    tr
+                                        td.o-header Process Minimum Lifespan (s):
+                                        td.o-content
+                                            input(type="range" min="1" v-bind:max="processMaxLife - 1" v-model="processMinLife")
+                                            | {{ processMinLife }}
+                                    tr
+                                        td.o-header Process Maximum Lifespan (s):
+                                        td.o-content
+                                            input(type="range" v-bind:min="processMinLife + 1" max="20" v-model="processMaxLife")
+                                            | {{ processMaxLife }}
+                                    tr
+                                        td.o-header New Process Rate (ms):
+                                        td.o-content
+                                            input(type="range" min="500" max="10000" v-bind:step="cycleRate" v-model="rate")
+                                            | {{ rate }} 
                             .option
                                 .sub-section-header UI Options
-                                ul
+                                ul.o-content
+                                    li
+                                        input(type="checkbox" v-model="options.showLog")
+                                        | Log
                                     li
                                         input(type="checkbox" v-model="options.showId")
                                         | ID
@@ -71,6 +98,12 @@ html
                                     li
                                         input(type="checkbox" v-model="options.showAnimalImage")
                                         | Animal Image
+                                    li
+                                        input(type="checkbox" v-model="options.showProcessTimer")
+                                        | Active Process Timer
+                            #startStopFrame(v-bind:style="{ animation: running ? 'ssframe 1s infinite' : 'none' }")
+                            #startStop(type="button" v-bind:class="running ? 'running' : 'paused'" @click="running=!running")
+                                i.fa(v-bind:class="running ? 'fa-pause' : 'fa-play'")
             #progress-bar-wrapper               
                 if (!progressSplit === true)
                     p.progressNumber {{ current }}% 
@@ -85,7 +118,7 @@ html
                             .section-header Virtual Memory                                
                     tr
                         td
-                            .frame(v-for="f in frames" v-bind:key="f" v-bind:style="{ background: f.color, marginLeft: f.pageId ? 10 : 0, opacity: f.pageId ? 0.3 : 1 }")
+                            .frame(v-for="f in frames" v-bind:key="f" v-bind:style="{ background: f.color, marginLeft: f.pageId != null ? 10 : 0, opacity: f.pageId != null ? 0.3 : 1 }")
                                 img(v-if="options.showAnimalImage" v-bind:src="f.animal.url")
                                 p {{ f.id }} {{ options.showAnimalName ? '(' + f.animal.name + ')': '' }}
             .page-frame   
@@ -95,14 +128,15 @@ html
                 table#pageTable                   
                     tbody
                         tr(v-for="g in pages" data-is-focused="false" @click="focusPage($event)")  
-                            td 
+                            td(style="background: #fff") 
+                                .page-id \#{{ g.id }}
                                 .page-label
-                                    | Page ID {{ g.id }}
-                                    br
                                     p Capacity: {{ g.capacity }}u ({{ Math.round((g.capacity / capacity) * 100)  }}%)
+                                    p Usage: {{ g.usage }}
                             td
                                 .page-block(v-bind:style="[pageBlockStyle,{ width: g.width }]")
                                     .page-process(v-for="r in g.processes" v-bind:style="[processStyle, { background: r.color, width: r.width, 'background-image': options.showAnimalImage ? 'url(' + r.animal.url + ')' : 'none' }]")                                       
+                                        .quantum-bar(v-if="options.showProcessTimer" v-bind:style="{ height: Math.round((r.burst / r.maxBurst) * 100) + '%' }")
                                         p.label-id(v-if="options.showId" v-bind:style="{ background: r.color }")
                                             i.fa.fa-tag 
                                             |  {{ r.id }}                                                                               
@@ -110,4 +144,12 @@ html
                                             i.fa.fa-pie-chart
                                             |  {{ r.m }}
                                         p.label-animal(v-if="options.showAnimalName") {{ r.animal.name }}
+            .extra-container
+                .chart-frame
+                    .section-header Chart
+                        canvas#chartCanvas
+                .log-frame(v-if="options.showLog")
+                    .section-header Log
+                    #log
+                        .log-item(v-for="l in logItems")  [{{ l.timeString }}]: {{ l.value }}
     script(src='/scripts/main.js')

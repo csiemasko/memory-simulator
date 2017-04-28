@@ -21,7 +21,8 @@
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif
+    font-family: Arial, Helvetica, sans-serif;
+    background: #eee;
 }
 
 h4 {
@@ -44,6 +45,7 @@ input[type="range"] {
 }
 
 .page-frame {   
+    float: left;
     display: flex;
     flex: 1 1 auto;    
     height: 500px;
@@ -56,6 +58,48 @@ input[type="range"] {
     box-sizing: border-box;
     flex-direction: column;
     align-content: stretch;
+}
+
+.extra-container {
+    flex: 0 0 auto;
+    height: 500px;
+    width: 300px;
+}
+
+.chart-frame {
+    height: 180px;
+}
+
+#chartCanvas {
+    width: 100%;
+    height: 100%; 
+    background: #fff;
+}
+
+.log-frame {
+    width: 100%;
+    height: 300px;
+    background: rgba(0,0,0,.5);
+}
+
+#log {
+    background: rgba(0,0,0,.5);
+    font-family: Courier New, Courier, monospace;
+    color: #fff;
+    width: 100%;
+    height: 95%;
+    overflow-y: auto;   
+    display: flex; 
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.log-item {
+    font-size: 10px;
+    flex: 0 1 auto;
+    align-self: auto;
 }
 
 .page-block {      
@@ -73,6 +117,9 @@ input[type="range"] {
 }
 
 .section-header {
+    cursor: move;
+    cursor: -webkit-grab;
+    user-select: none;
     display: block;
     font-size: 10px;
     color: #fff;
@@ -122,7 +169,7 @@ input[type="range"] {
         animation: grow-width 1s forwards;
         min-width: 500px;
         box-shadow: 0 0 30px rgba(0,0,0,.5);
-        transform: scale(1.1);
+        transform: scale(1.1);       
         z-index: 5;
         transition: transform 0.5s ease, min-width 3s ease;
     }
@@ -168,11 +215,11 @@ input[type="range"] {
 }
 
 .option {   
+    background: #fff;
     display: inline-block;
     vertical-align: top;
     font-size: 10px;
-    font-weight: lighter;  
-    background: #eee; 
+    font-weight: lighter; 
     margin: 10px;
     border: 1px solid @color-default-border;
     ul {
@@ -190,8 +237,23 @@ input[type="range"] {
         }
     } 
 }
+.o-content {
+    padding: 5px;
+}
+
+@keyframes frameEnter {
+    from {
+        margin-left: -20px;
+        opacity: 0;
+    }
+    to {
+        margin-left: 0;
+        opacity: 1;
+    }
+}
 
 .frame {
+    animation: frameEnter .5s ease-in-out;
     color: #fff;
     width: 100px;
     height: 30px;
@@ -199,7 +261,8 @@ input[type="range"] {
     text-align: center;
     border: 1px solid #bbb;
     box-sizing: border-box;
-    margin: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
     p {
         background: rgba(0,0,0,0.5);
     }
@@ -209,6 +272,8 @@ input[type="range"] {
         width: 30px;
     }
 }
+
+
 
 #root {
     display: flex;
@@ -221,13 +286,94 @@ input[type="range"] {
     margin: 5px;
 }
 
+#startStop {
+    float: right;
+    position: absolute;
+    right: 25px;
+    top: 75px;
+    height: 75px;
+    width: 75px;
+    border-radius: 50px;
+    color: #fff;
+    box-sizing: border-box;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0,0,0,.4);
+    vertical-align: middle;
+    i {      
+        width: 100%;
+        text-shadow: 2px 2px rgba(0,0,0,.5);
+        text-align: center;
+        font-size: 20px; 
+        margin-top: 26px;    
+    }
+}
+
+@keyframes ssframe {
+    from {
+        width: 75px;
+        height: 75px;
+        top: 75px;
+       
+        opacity: 1;
+    }
+    to {
+        width: 100px;
+        height: 100px;
+        top: 63px;
+        right: 13px;
+        opacity: 0
+    }
+}
+
+#startStopFrame {
+    background: red;
+    float: right;
+    border-radius: 50px;
+    position: absolute;
+    right: 25px;
+    top: 75px;
+    height: 75px;
+    width: 75px;
+}
+
+
+.running {
+    background: red;  
+}
+
+@keyframes pausedAnim {
+    from {
+        border-color: darkgreen;
+    }
+    to {
+        border-color: lime;
+    }
+}
+
+.paused {
+    border: 2px solid darkgreen;
+    background: green;
+    animation: pausedAnim 1s alternate infinite;
+}
+
 #frame-frame {
     border: 1px solid #888;    
-    float: left;
-    height: 500px;
-    max-height: 500px;
-    overflow-y: auto;
-    box-sizing: border-box;    
+    background: #fff;
+    height: 500px;   
+    width: 140px;  
+    overflow-y: auto; 
+    table {
+        border-spacing: 0;
+        border-collapse: collapse;
+        margin: 0;
+        width: 100%;
+        tr {
+            td {
+                text-align: center;
+                width: 100%;
+            }
+        }
+    }   
 }
 
 #progress-bar-wrapper {
@@ -243,24 +389,28 @@ input[type="range"] {
 #memory-bar {
     background: #f00;
     height: 10px;
-    width: 200px;
+    width: 15%;
     float: right;
 }
 
 @keyframes usagePulse {
-    from {
-        background: linear-gradient(45deg, rgba(210,255,82,1) 0%, rgba(145,232,66,1) 100%);    
+    0% {
+        background-position: 0% 50%;
     }
-    to {
-        background: linear-gradient(45deg, rgba(145,232,66,1) 0%, rgba(145,232,66,1) 11%, rgba(210,255,82,1) 98%, rgba(210,255,82,1) 100%);
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;        
     }
 }
 
 #memory-usage {
     height: 100%;
     background: #0f0;
-    animation: usagePulse 1s reverse infinite;
+    animation: usagePulse 1s ease infinite;
     transition: .5s all;
+    background: linear-gradient(45deg, rgba(210,255,82,1) 0%, rgba(145,232,66,1) 100%);    
 }
 
 .progress-block {
@@ -269,7 +419,12 @@ input[type="range"] {
     animation-name: expand;
     transition: all linear;
 }
-
+.page-id {
+    font-size: 30px;
+    color: #fff;
+    text-shadow: 0 0 5px #000;
+    text-align: center;
+}
 .page-label {
     font-size: 10px;
     font-weight: normal;
@@ -281,12 +436,23 @@ input[type="range"] {
     transition: .25s all;
 }
 
+.quantum-bar {
+    height: 100%;
+    width: 4px;
+    background-image: linear-gradient(to top, #06451D 0%, #278F17 16%, #78FF1F 50%, #2F9E00 85%, #2C6315 100%) !important;
+    float: left;
+    transition: .5s all linear;
+}
+
 #pageTable {
     flex: 1 0 auto;
     padding: 5px;
     align-self: stretch;
     width: 100%;
-    height: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+    height: 95%;
+    float: left;
     box-sizing: border-box;
     background-image: url('../assets/images/grey.png');
     background-repeat: repeat;
