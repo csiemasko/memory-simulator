@@ -2,7 +2,6 @@ var express = require('express');
 var app = express();
 var https = require('https');
 var animals = require('animals');
-var rest = require('node-rest-client').Client;
 var sleep = require('thread-sleep');
 var fs = require('fs');
 var _ = require('lodash');
@@ -10,8 +9,6 @@ var _ = require('lodash');
 app.set('view engine', 'pug');
 app.set('views', './views');
 app.use(express.static(__dirname + '/public'));
-
-var client = new rest();
 
 var animalArray = [];
 
@@ -59,11 +56,7 @@ function genAnimals(callback) {
                        if (callback) callback(a);                     
                     }
                
-                });
-                res.on('error', function() {
-                    console.log('~ERROR~');
-                  
-                });
+                });               
            });
            request.setTimeout(1000, function (e) { return; });
               

@@ -26,7 +26,10 @@ html
                                 br
                                 input(type="button" value="Generate Pages" @click="genPages()")
                                 br
-                                input(type="button" value="First Fit" @click="fifo()")
+                                select(v-model="additionMode")
+                                    option(value="firstFit") First Fit
+                                    option(value="bestFit") Best Fit
+                                    option(value="worstFit") Worst Fit                             
                             .option
                                 .sub-section-header Memory Values
                                 table

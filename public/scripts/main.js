@@ -11,6 +11,8 @@ var vapp = new Vue({
             showProcessTimer: true,
             showLog: true      
         },
+        chartObject: null,
+        additionMode: 'firstFit',
         virtualMemory: 200,           
         capacity: 100,
         pageSize: 30,
@@ -135,9 +137,8 @@ var vapp = new Vue({
             var logElement = $('#log');
             if (logElement.scrollHeight - logElement.clientHeight <= logElement.scrollTop + 1) {
                 logElement.scrollTop = logElement.scrollHeight - logElement.clientHeight;
-            }
-            
-        },     
+            }            
+        },
         genFrames: function() {
             this.frames = [];
             var delay = 0;
@@ -160,7 +161,8 @@ var vapp = new Vue({
                  this.physicalData.shift();
                  this.virtualData.shift();
             }
-            vapp.genChart();
+            vapp.$data.chartObject.update();
+            //vapp.genChart();
         },
         genChart: function() {            
             var chart = new Chart($('#chartCanvas'), {
@@ -201,6 +203,7 @@ var vapp = new Vue({
                     responsive: true                    
                 }
             });
+            return chart;
         },
         genPages: function() {
             this.pages = [];
@@ -237,9 +240,32 @@ var vapp = new Vue({
             for(var i = 0; i < awaitingProcesses.length; i++) {
                 var p = awaitingProcesses[i];
                 var mem = p.m;
-                var candidate = _.find(vapp.$data.pages, function(page) {              
-                     return (page.capacity - page.usage) >= mem; 
-                    });
+                var candidate;
+                switch (this.additionMode) {
+                    case 'firstFit': {
+                        candidate = _.find(vapp.$data.pages, function(page) {              
+                            return (page.capacity - page.usage) >= mem; 
+                                });
+                        break;
+                    }
+                    case 'bestFit': {
+                        candidate = _.minBy(_.filter(vapp.$data.pages, function(page) {
+                            return (page.capacity - page.usage) >= mem;
+                        }, function (subPage) {
+                            return (subPage.capacity - subPage.usage);
+                        }));              
+                        break;
+                    }
+                    case 'worstFit': {
+                        candidate = _.maxBy(_.filter(vapp.$data.pages, function(page) {
+                            return (page.capacity - page.usage) >= mem;
+                        }, function (subPage) {
+                            return (subPage.capacity - subPage.usage);
+                        }));
+                        break;
+                    }
+                }
+                
                 if (candidate != null) {
                     p.pageId = candidate.id;
                     p.width = Math.floor((p.m / candidate.capacity) * 100) + '%';
@@ -266,6 +292,7 @@ var vapp = new Vue({
                 } */                  
                 vapp.genFrames();
                 vapp.genPages();
+                vapp.$data.chartObject = vapp.genChart();
                 vapp.fifo();               
             });
         }
