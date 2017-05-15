@@ -16,6 +16,10 @@ app.get('/', function (req, res) {
     res.render('index');
 });
 
+app.get('/paging', function (req, res) {
+    res.render('paging');
+});
+
 app.get('/get-animals', function(req, res) {    
     res.send(animalArray);
     //res.send(animals.words);

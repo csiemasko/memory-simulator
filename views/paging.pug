@@ -1,0 +1,52 @@
+html
+    head
+        script(src='https://unpkg.com/vue') 
+        script(src='/scripts/lodash.js')
+        script(src='/scripts/moment.js')
+        link(rel='stylesheet' href='/css/paging.css')
+        link(rel='stylesheet' href='/css/font-awesome.min.css')
+    body
+        h1 Paging Simulator
+        #root
+            .option-container
+                .option
+                    h4 Mode
+                    input(type="radio" value="demo" v-model="options.mode" checked)
+                    | Demo  
+                    br        
+                    input(type="radio" value="collection" v-model="options.mode")
+                    | Data Collection       
+                .option(v-if="options.mode == 'demo'")
+                    h4 Values    
+                    span Starting Address: 
+                    input(type="number" v-model="options.startingAddress")
+                    br
+                    span Cycles: 
+                    input(type="number" v-model="cycles")
+                    br
+                    span Iteration Delay: 
+                    input(type="range" v-model="delay" min="0" max="5000" step="50")
+                    | {{ delay }}        
+                .option(v-if="options.mode == 'demo'")
+                    h4 Algorithm
+                    select(v-model="options.algorithm")
+                        option(value="FIFO") First In First Out
+                        option(value="LRU") Least Recently Used
+                        option(value="LFU") Least Frequently Used
+                        option(value="RANDOM") Random
+                        option(value="SC") Second Chance
+                #startStop(v-if="!running" type="button" v-bind:class="running ? 'running' : 'paused'" @click="running=!running")
+                    i.fa(v-bind:class="running ? 'fa-pause' : 'fa-play'")
+            #progressContainer
+                #progress(v-bind:style="{ width: (progress / cycles) * 100 + '%', transition: 'width ' + delay/1000 + 's linear' }")
+                    p {{ Math.floor((progress / cycles) * 100) }}%
+            #mainContainer(v-if="currentProcess != null")                
+                #pageContainer 
+                    .page-item(v-for="page in currentProcess.ppt.pageTable" v-bind:class="{ validClass: page.validity, 'current-page': page.current }")
+                        .page-name {{ page.pageName }}
+                        ul
+                            li Frame Number   : {{ page.frameNum }}
+                            li Reference Count:{{ page.pageRefCnt }}
+                #logContainer
+                    p(v-for="l in logItems" v-bind:style="{ color: l.color }") {{ l.text }}         
+    script(src='/scripts/paging.js')
