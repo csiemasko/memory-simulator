@@ -6,6 +6,7 @@ var papp = new Vue({
             startingAddress: 0,
             algorithm: "LRU"
         },
+        processSize: 50000,
         currentProcess: null,
         logItems: [],
         progress: 0,
@@ -14,6 +15,8 @@ var papp = new Vue({
         running: false,
         favPg1: 0,
         favPg2: 0,
+        randomCnt: 0,
+        toggle: false,
         simStart: null
     },
     watch: {
@@ -27,12 +30,13 @@ var papp = new Vue({
             Log('--- BEGIN SIMULATION ---', '#0f0');
             var processor = new ProcessorData();
             this.currentProcess = new Process(processor);
-            if (this.options.mode == 'demo') {              
+            if (this.options.mode == 'demo') {    
+                this.currentProcess.processSize = this.processSize;         
                 this.currentProcess.run(this.cycles);
             } else if (this.options.mode == 'collection') {
                 this.delay = 5;
                 this.cycles = 1000;
-                this.currentProcess.processSize = 50000;
+                this.currentProcess.processSize = this.processSize;
                 this.currentProcess.framesAllocated = 4;
                 this.currentProcess.pageSize = processor.pageSize;
                 this.currentProcess.algo = processor.algo;
@@ -312,11 +316,20 @@ function Process(processordata,processsize,framesallocated) {
 }
 Process.prototype.locality = function(processsize,curraddress) {
     var selector = Math.round(Math.random() * 100);
-    if (selector < 20) curraddress++;
-    else if (selector < 40) curraddress += 4;
-    else if (selector < 60) curraddress -= 5;
-    else if (selector < 80) curraddress += 100;
-    else curraddress = Math.round(Math.random() * processsize);    
+    if (selector < 50) curraddress++;
+    else if (selector < 98) {
+        if (papp.$data.toggle == true) {
+            papp.$data.toggle = false;
+            curraddress = (papp.$data.favPg1 * this.pageSize) + this.pageSize / 2;
+        } else {
+            papp.$data.toggle = true;
+            curraddress = (papp.$data.favPg2 * this.pageSize) + this.pageSize / 2;
+        }
+    }
+    else {
+        curraddress = Math.round(Math.random() * processsize);   
+        papp.$data.randomCnt++;
+    }  
     if (curraddress < 0) curraddress = 100;
     if (curraddress >= processsize) curraddress = Math.round(processsize / 2);
     return curraddress;    
