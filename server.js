@@ -11,8 +11,10 @@ app.set('views', './views');
 app.use(express.static(__dirname + '/public'));
 
 var animalArray = [];
-
 app.get('/', function (req, res) {
+    res.render('paging');
+});
+app.get('/memory-simulator', function (req, res) {
     res.render('index');
 });
 

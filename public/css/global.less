@@ -1,0 +1,35 @@
+.nav-header {
+    position: fixed;
+    z-index: 5;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: 0 5px 20px rgba(0,0,0,.5);
+    a {
+        color: #fff;
+        text-decoration: none;
+    }
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 5px;
+        overflow: hidden;
+        background: #333;
+        color: #fff;
+        li {
+            float: left;
+            cursor: pointer;
+            padding: 5px;
+            margin-right: 20px;
+            &:hover {
+                background: #999;
+                border-radius: 20px;
+                transition: .5s all;
+            }
+            &[data-selected="true"] {            
+                background: #999;
+                border-radius: 20px;
+            }
+        }
+    }
+}

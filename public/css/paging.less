@@ -1,42 +1,59 @@
 html, body {
     font-family: Arial, Helvetica, sans-serif;
-  
+    background: #eee;
 }
 
 h1 {
     text-align: center;
 }
 
-.validClass {   
-    transition: .2s all;
-    background: green;  
-}    
-.option-container {
-    display: flex;
-    width: 100%;    
+#root {
+    margin-top: 60px;
 }
-.option {
-    padding: 10px;
-    background: #eee;
+   
+.option-container {
+    display: flex;   
+    justify-content: center;
+    margin: 0 auto; 
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+.option {   
+    background: #fff;    
+    border: 1px solid #333;
     margin: 5px;
     font-size: 10px;
-    h4 {
-        display: block;
+    box-sizing: border-box;
+    .o-header {
+        margin-top: -1px;
+        margin-right: -1px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        box-sizing: border-box;     
+        background: #000;
+        color: #fff;
+        text-align: center;
+    }  
+    .o-content {
+        margin: 5px;
+    } 
+    .legend-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #000;
+        display: inline-block;
+        margin: 5px;
+        vertical-align: middle;
     }
     input {
+        
         font-size: 10px;
     }
 }
-
-.current-page {
-    background: blue;
-    box-shadow: 0 0 50px rgba(0,0,0,.5);
-    margin-top: -10px;
-    transition: .2s all;
-    transform: scale(1.1);
-}    
+  
 
 #mainContainer {
+    background: #fff;
     margin: 0 auto;
     display: flex;
     flex-direction: row;
@@ -56,7 +73,7 @@ h1 {
     justify-content: flex-end;
     height: auto;
     min-width: 400px;
-    max-height: 700px;
+    max-height: 500px;
     padding: 5px;
     box-shadow: border-box;
     font-size: 11px;
@@ -67,18 +84,21 @@ h1 {
 } 
 #progressContainer {
     margin: 0 auto;
+    margin-bottom: 10px;
     border: 1px solid #000;
     height: 20px;
     width:90%;
     text-align: center;
     border-radius: 10px;
-    box-sizing: border-box;
+    box-sizing: border-box !important;
 }
-#progress {
+
+#progress { 
+    margin-top: -1px;
     border-radius: 10px;
     height: 20px;
-    background: linear-gradient(to right, #b4ddb4 0%,#005700 0%,#005700 10%,#52b152 28%,#83c783 51%,#008a00 67%,#002400 100%);
-    box-sizing: border-box;
+    background: linear-gradient(to right, #c9de96 0%,#8ab66b 44%,#398235 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    box-sizing: border-box !important;
     p {
         background: rgba(0,0,0,.7);
         color: #fff;
@@ -163,6 +183,15 @@ h1 {
     animation: pausedAnim 1s alternate infinite;
 }
 
+#valuesTable {
+  
+    tr {
+        td:first-child {
+            text-align: right;
+        }
+    }
+}
+
 #pageContainer {
     flex: 0 1 auto;
     border: 1px solid #333;
@@ -173,6 +202,7 @@ h1 {
     .page-item {
         margin: 5px;
         width: 150px;
+        background: #fff;
         height: 150px;
         border: 1px solid #000;
         position: relative;
@@ -186,16 +216,21 @@ h1 {
             :nth-child(even) {
                 background: rgba(0,0,0,.3);    
                 color: #fff;
+                border-radius: 10px;
+                padding: 3px;
             }
             :nth-child(odd) {
                 background: rgba(255,255,255,.3);
                 color: #000;
+                border-radius: 10px;
+                padding: 3px;
             }
         }
     }    
     .page-name { 
+        user-select: none;
         text-transform: uppercase;
-        padding-top: 50px;
+        padding-top: 60px;
         position: absolute;
         margin: 0 auto;
         text-align: center;
@@ -204,11 +239,31 @@ h1 {
         left: 0;
         bottom: 0;
         right: 0;
-        z-index: -1;
+        z-index: 2;
         overflow: hidden;
         font-size: 48px;
         color: #aaa;
         font-weight: bold;        
         margin: 0 auto;
+        text-shadow: 3px 3px rgba(0,0,0,.5);
     }
+
+    .validClass {   
+    border: 1px solid cyan;
+    transition: .2s all;
+    background: navy;
+    color: #fff; 
+}
+
+
+
+
+.current-page {
+    background: darkred;
+    box-shadow: 0 0 50px rgba(0,0,0,.5);
+    margin-top: -10px;
+    transition: .2s all;
+    color: #fff;
+    transform: scale(1.1);
+}   
 }

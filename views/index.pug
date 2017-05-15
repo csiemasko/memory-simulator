@@ -6,11 +6,17 @@ html
         script(src='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js')
         script(src='/scripts/moment.js')
         script(src='/scripts/Chart.min.js')
+        link(rel='stylesheet' href='/css/global.css')
         link(rel='stylesheet' href='/css/main.css')
         link(rel='stylesheet' href='/css/font-awesome.min.css')
         link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css')
         title Memory Simulator
     body
+    .nav-header
+        ul
+            li 
+                a(href="/paging") Paging Simulator
+            li(data-selected="true") Memory Simulator
         #root
             .option-container
                 table
