@@ -100,14 +100,14 @@ Process.prototype.invalidatePagewithThisFrame = function(frameNum,ppt) {
 }
 //Algorithms
 Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, willReplace) {
-    temp = [];
+    /*temp = [];
     for(var i = 0; i < ppt.pageTable.length; i++) {
         if (ppt.pageTable[i].frameNum != -1 && ppt.pageTable[i].validity == true) {
             temp.push(ppt.pageTable[i]);
         }
-    }
-
-    temp = _.sortBy(temp, 'frameNum');
+    }*/
+    var temp = this.cloneSortArray(ppt, framesAllocated);
+    //temp = _.sortBy(temp, 'frameNum');
 
     temp.forEach(function (p,index,array) {
         if (p.pageNumber == page) {
@@ -120,11 +120,12 @@ Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, w
         }
         else {
             p.changeLruRef(false);
-            for(var test in ppt.pageTable) {
+            ppt.pageTable.forEach(function (test,i,a) {
                 if (test == p) {
                     test.changeLruRef(false);
                 }
-            }
+            });
+           
         }
     });
 
@@ -137,7 +138,9 @@ Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, w
         }     
     }
 
-    if (willReplace) this.invalidatePagewithThisFrame(pageWithLowerRef.frameNum, ppt);
+    if (willReplace) {
+        this.invalidatePagewithThisFrame(pageWithLowerRef.frameNum, ppt);
+    }
     return pageWithLowerRef.frameNum;    
 }
 Process.prototype.secondChanceAlgo = function(ppt, framesAllocated, page, replacing) {
@@ -335,7 +338,7 @@ Process.prototype.locality = function(processsize,curraddress) {
     return curraddress;    
 }
 Process.prototype.getPageNum = function(curraddress, pagesize) {
-    return Math.floor(curraddress / pagesize);
+    return Math.round(curraddress / pagesize);
 }
 Process.prototype.randomRAlgo = function() {
     var victimFrameNum = -1;
@@ -408,8 +411,9 @@ Process.prototype.memAccess = function() {
     var pageNum;
     this.currentAddress = this.locality(this.processSize, this.currentAddress);
     pageNum = this.getPageNum(this.currentAddress, this.pageSize);
+    if (pageNum >= this.ppt.pageTable.length) pageNum = this.ppt.pageTable.length - 1;
     //Validity Check
-   
+
         if (this.ppt.pageTable[pageNum].validity == true) {      
         _.forEach(this.ppt.pageTable, function (t) {
             t.current = false;
@@ -435,8 +439,6 @@ Process.prototype.memAccess = function() {
         //Call do paging
         this.doPaging(pageNum);
     }
-   
-    
     this.memAccessCnt++;
 }
 Process.prototype.handle = function() {
