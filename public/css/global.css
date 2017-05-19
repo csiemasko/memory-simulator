@@ -10,7 +10,7 @@
   color: #fff;
   text-decoration: none;
 }
-.nav-header ul {
+.nav-header > ul {
   list-style-type: none;
   margin: 0;
   padding: 5px;
@@ -18,18 +18,18 @@
   background: #333;
   color: #fff;
 }
-.nav-header ul li {
+.nav-header > ul li {
   float: left;
   cursor: pointer;
   padding: 5px;
   margin-right: 20px;
 }
-.nav-header ul li:hover {
+.nav-header > ul li:hover {
   background: #999;
   border-radius: 20px;
   transition: .5s all;
 }
-.nav-header ul li[data-selected="true"] {
+.nav-header > ul li[data-selected="true"] {
   background: #999;
   border-radius: 20px;
 }
