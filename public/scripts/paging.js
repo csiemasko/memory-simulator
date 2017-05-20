@@ -4,9 +4,12 @@ var papp = new Vue({
         options: {
             mode: 'demo',
             startingAddress: 0,
-            algorithm: "LRU"
+            algorithm: "LRU",
+            pageSize: 1024,
+            framesAllocated: 4,
+            processSize: 50000,
         },
-        processSize: 50000,
+        
         currentProcess: null,
         logItems: [],
         progress: 0,
@@ -29,9 +32,13 @@ var papp = new Vue({
             this.simStart = moment();
             Log('--- BEGIN SIMULATION ---', '#0f0');
             var processor = new ProcessorData();
+            //Override default with user values
+            processor.pageSize = this.options.pageSize;
             this.currentProcess = new Process(processor);
-            if (this.options.mode == 'demo') {    
-                this.currentProcess.processSize = this.processSize;         
+            this.currentProcess.framesAllocated = this.options.framesAllocated;
+            this.currentProcess.processSize = this.options.processSize;         
+
+            if (this.options.mode == 'demo') {//Demo: Allow all customized variables
                 this.currentProcess.run(this.cycles);
             } else if (this.options.mode == 'collection') {
                 this.delay = 5;
@@ -48,8 +55,7 @@ var papp = new Vue({
                 this.currentProcess.pageSize = processor.pageSize;
                 this.currentProcess.algo = processor.algo;
                 this.currentProcess.run(8000);
-            }
-           
+            }           
         }
     }
 });
@@ -99,15 +105,8 @@ Process.prototype.invalidatePagewithThisFrame = function(frameNum,ppt) {
     }
 }
 //Algorithms
-Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, willReplace) {
-    /*temp = [];
-    for(var i = 0; i < ppt.pageTable.length; i++) {
-        if (ppt.pageTable[i].frameNum != -1 && ppt.pageTable[i].validity == true) {
-            temp.push(ppt.pageTable[i]);
-        }
-    }*/
+Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, willReplace) {    
     var temp = this.cloneSortArray(ppt, framesAllocated);
-    //temp = _.sortBy(temp, 'frameNum');
 
     temp.forEach(function (p,index,array) {
         if (p.pageNumber == page) {
@@ -129,7 +128,7 @@ Process.prototype.leastRecentlyUsedAlgo = function(ppt, framesAllocated, page, w
         }
     });
 
-    var lowestRef = 0;//change to high?
+    var lowestRef = 0;
     var pageWithLowerRef = temp[0];
     for (var p in temp) {
         if (p.lruRef < lowestRef) {
@@ -211,27 +210,7 @@ Process.prototype.leastFrequentlyUsedAlgo = function(ppt, framesAllocated, page,
         Log('-> Replacing frame ' + pageWithLowestRef.frameNum);
         this.invalidatePagewithThisFrame(pageWithLowestRef.frameNum, ppt);
     }
-
     return pageWithLowestRef.frameNum;
-
-    /*if (temp.length == framesAllocated) {
-        for (var i = 0; i < temp.length; i++) {
-            if (temp[i].flag == true) {
-                temp[i].flag = false;
-            }
-            if (i == temp.length - 1) {
-                temp[0].flag = true;
-            } else {
-                temp[i+1].flag = true;
-            }
-            this.invalidatePagewithThisFrame(temp[i].frameNum, ppt);
-            return temp[i].frameNum;
-        }
-    }
-
-    temp[i].flag = true;
-    this.invalidatePagewithThisFrame(temp[0].frameNum, ppt);
-    return temp[0].frameNum;*/
 }
 Process.prototype.firstInFirstOutAlgo = function (ppt, framesAllocated, page, pff, pageFaultRate) {
     if (pff == true && pageFaultRate > 0.7) {
@@ -456,7 +435,7 @@ Process.prototype.run = function(cycles) {
                 Log('Number of Memory Accesses: ' + p.memAccessCnt);
                 Log('Number of Page Faults: ' + p.pageFaultCnt);
                 p.pageFaultRate = (p.pageFaultCnt / p.memAccessCnt * 100);
-                Log('Page Fault Rate: ' + p.pageFaultRate + '%');
+                Log('Page Fault Rate: ' + p.pageFaultRate + '%', 'cyan');
                 var seconds = moment.duration(moment().diff(papp.$data.simStart)).asSeconds();
                 Log('--- END SIMULATION --- (' + seconds + ' sec.)', '#f00');
                 papp.$data.running = false;
@@ -480,12 +459,4 @@ function Log(val, color) {
         text: '[' + moment().format('h:mm:ss:SSS') + ']: ' + val,
         color: colorCode
 });
-}
-
-function nav() {
-    
-}
-
-function main() {
-
 }
